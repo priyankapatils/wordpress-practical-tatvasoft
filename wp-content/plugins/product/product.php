@@ -51,11 +51,12 @@ $str = "";
 		{
 			$sold = "true" ;
 		}
-  
+  $product_name = get_the_title();
     if ( $sold == '' ) {
         $add_to_cart = '
             <form action="" method="post">
                 <input type="hidden" name="product_id" value="' . $product . '">
+                 <input type="hidden" name="product_name" value="' . $product_name . '">
                 <input type="hidden" name="product_price" value="' . $price . '">
                 <input type="hidden" name="product_url" value="' . $url_current . '">
                 ' . $option_form . '
@@ -99,7 +100,7 @@ function add_to_cart_functionality()
 	if($_POST['add-to-cart'])
 	{
 
-		$product_name = $_POST['product_id'];
+		$product_name = $_POST['product_name'];
 		$product_price = $_POST['product_price'];
 		$product_url = $url_current;
 
@@ -161,8 +162,9 @@ function cart_function()
 		$price =  $item['product_price'];
 		$item_quantity = $item['Product_quantity'];
 		$item_url = $item['product_url'];
-		$item_total_cost = $price += $item_total_cost;
+		$item_total_cost = $price * $item_quantity;
 		$cart_subtotal += $item_total_cost;
+
 
 		$remove_from_cart = '<a href="?action=remove-from-cart&id='. $item_id.'">remove</a>';
 		$item_quantity_form = '<input type="text" name="'.$item_id.'" value="'.$quantity. ' " class="input-condensed text-center">';
@@ -178,10 +180,10 @@ function cart_function()
                         <span class="text-muted text-small">' . $item_price . '</span>
                     </td>
                     <td style="width: 4em;">' . $item_quantity . '</td>
-                    <td>$' . $item_total_cost . '</td>
-                </tr>
-            ';
-	    }
+                    <td>' . $item_total_cost . '</td>
+                    <td>'.$remove_from_cart.'</td>
+                </tr>';
+            	    }
         $cart_total = $cart_subtotal;
 
         // Checkout cart form
@@ -191,9 +193,10 @@ function cart_function()
                     <thead>
                         <tr>
                             <th class="text-left">Item</th>
-                            <th style="width: 4em;">#</th>
+                            <th style="width: 4em;">Product Name</th>
                             <th>Price</th>
                             <th>&nbsp;</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>' . $_cart_content . '
@@ -224,14 +227,15 @@ function cart_function()
 		                        <th>Item</th>
 		                        <th style="width: 4em;">#</th>
 		                        <th>Price</th>
+		                         <th>Action</th>
 		                    </tr>
 		                </thead>
 		                <tbody>' . $checkout_cart_complete . '
 		                </tbody>
 		            </table>
-		            <p class="no-space-bottom text-right">Subtotal: $' . $checkout_cart_subtotal . '</p>
-		            <p class="space-bottom-small text-right">Shipping: $' . $checkout_cart_shipping . '</p>
-		            <p class="text-tall text-right">Total: $' . $checkout_cart_total . '</p>
+		            <p class="no-space-bottom text-right">Subtotal: ' . $cart_subtotal . '</p>
+		          
+		            <p class="text-tall text-right">Total: ' . $cart_total . '</p>
 		        ';
 
 		        // Empty cart
@@ -248,6 +252,24 @@ function cart_function()
 		    return $checkout_cart;
     
 
+if (stripos($url_current, '?action=remove-from-cart') !== false) {
+
+    // If product ID exists in shopping cart...
+    if ( isset($_GET['id']) ) {
+
+        // Define product variable
+        $prod_id = $_GET['id'];
+
+        // Remove product from shopping cart
+        unset($_SESSION['shopping_cart'][$prod_id]);
+
+    }
+
+    // Redirect page to prevent duplicate "remove from cart" on refresh
+    header('Location:' . $url_update);
+    exit();
+
+}	
 	
 }
 ?>
